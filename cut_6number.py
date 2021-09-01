@@ -44,8 +44,8 @@ def make_box(box):
     
 model = load_model('cnn_trainning/hanh_model_l4.h5')
 # img = cv2.imread('opencv_img/no_noise_binhthuan.jpg')
-# img = cv2.imread('opencv_img/no_noise_danang.jpg')
-img = cv2.imread('opencv_img/no_noise_dongnai.jpg')
+img = cv2.imread('opencv_img/no_noise_danang.jpg')
+# img = cv2.imread('opencv_img/no_noise_dongnai.jpg')
 cropped_img = cut6number(img)
 # cv2.imwrite("detected_imgs/hinh2.png", cropped_img)
 # cropped_img = cv2.imread('detected_imgs/hinh2.png')
@@ -131,12 +131,12 @@ for a in new_a[len(new_a) - 7:len(new_a)]:
     [val, percent] = detection_number(img_cut_con, model)
     count+=1
     if(percent > 0):
-        instr = "{}_{:0.2f}_{}".format(val, percent, count)
+        instr = "{}_{:0.0f}%".format(val, percent*100)
         print(instr)
         print(box_cou)
         print("---------------------")
         cv2.drawContours(cropped_img, [box_cou], 0, (0,255,255), 3)
-        cv2.putText(cropped_img, str(instr), (left_top[0], left_top[1]), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 1, cv2.LINE_AA)
+        cv2.putText(cropped_img, str(instr), (left_top[0], left_top[1]), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 0, 0), 1, cv2.LINE_AA)
 
 # boxs = sorted(boxs,key=itemgetter(1))
 # print("len1: ", len(boxs))
@@ -205,6 +205,6 @@ for a in new_a[len(new_a) - 7:len(new_a)]:
 #         cv2.putText(cropped_img, str(instr), (left_top[0], left_top[1]), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 1, cv2.LINE_AA)
 
 
-cv2.imwrite("detected_imgs/hinh8.png", cropped_img)
+cv2.imwrite("detected_imgs/hinh2.png", cropped_img)
 plt.imshow(cv2.cvtColor(cropped_img, cv2.COLOR_BGR2RGB))
 plt.show()
