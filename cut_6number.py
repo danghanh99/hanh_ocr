@@ -41,11 +41,19 @@ def make_box(box):
     # x_arr = sorted(x_arr)
     # y_arr = sorted(y_arr)
     return [min(x_arr), min(y_arr)], [max(x_arr), max(y_arr)]
-    
+
+def is_similarity(first_box, second_box):
+    count = 0
+    for point in second_box:
+        if(point in first_box):
+            count += 1
+    if(count >= 2): return True
+    return False
+
 model = load_model('cnn_trainning/hanh_model_l4.h5')
 # img = cv2.imread('opencv_img/no_noise_binhthuan.jpg')
-img = cv2.imread('opencv_img/no_noise_danang.jpg')
-# img = cv2.imread('opencv_img/no_noise_dongnai.jpg')
+# img = cv2.imread('opencv_img/no_noise_danang.jpg')
+img = cv2.imread('opencv_img/no_noise_dongnai.jpg')
 cropped_img = cut6number(img)
 # cv2.imwrite("detected_imgs/hinh2.png", cropped_img)
 # cropped_img = cv2.imread('detected_imgs/hinh2.png')
@@ -107,19 +115,26 @@ def cutCountour(img, path, con):
 new_a = []
 count = 0
 area_a = []
+
 for c in cnts:
     rect = cv2.minAreaRect(c)
     box = cv2.boxPoints(rect)
     box = np.int0(box)
     aa = cv2.contourArea(box)
+    
     if(aa not in area_a):
-        new_a.append([box, aa])
-        area_a.append(aa)
+        if(len(new_a) > 1):
+            if(is_similarity(new_a[len(new_a)-1][0], box) == False):
+                new_a.append([box, aa])
+                area_a.append(aa)
+        else:
+            new_a.append([box, aa])
+            area_a.append(aa)
 
 new_a = sorted(new_a,key=itemgetter(1))
 
 count = 0
-for a in new_a[len(new_a) - 7:len(new_a)]:
+for a in new_a[len(new_a) - 6:len(new_a)]:
     box_cou= a[0]
     box = make_box(box_cou)
     left_top = box[0] #x:y
@@ -205,6 +220,6 @@ for a in new_a[len(new_a) - 7:len(new_a)]:
 #         cv2.putText(cropped_img, str(instr), (left_top[0], left_top[1]), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 1, cv2.LINE_AA)
 
 
-cv2.imwrite("detected_imgs/hinh2.png", cropped_img)
+cv2.imwrite("detected_imgs/hinh3.png", cropped_img)
 plt.imshow(cv2.cvtColor(cropped_img, cv2.COLOR_BGR2RGB))
 plt.show()
