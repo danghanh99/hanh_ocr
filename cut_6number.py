@@ -51,17 +51,14 @@ def is_similarity(first_box, second_box):
     return False
 
 model = load_model('cnn_trainning/hanh_model_l4.h5')
-# img = cv2.imread('opencv_img/no_noise_binhthuan.jpg')
+img = cv2.imread('opencv_img/no_noise_binhthuan.jpg')
 # img = cv2.imread('opencv_img/no_noise_danang.jpg')
-img = cv2.imread('opencv_img/no_noise_dongnai.jpg')
+# img = cv2.imread('opencv_img/no_noise_dongnai.jpg')
 cropped_img = cut6number(img)
-# cv2.imwrite("detected_imgs/hinh2.png", cropped_img)
-# cropped_img = cv2.imread('detected_imgs/hinh2.png')
 gray = cv2.cvtColor(cropped_img, cv2.COLOR_BGR2GRAY)
 canny = cv2.Canny(gray, 130, 255, 1)
 cnts = cv2.findContours(canny, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 cnts = cnts[0] if len(cnts) == 2 else cnts[1]
-# cv2.drawContours(cropped_img, cnts, -1, (0,255,0), 3)
 
 boxs = []
 crosses = []
@@ -109,7 +106,6 @@ def cutCountour(img, path, con):
     # cv2.imshow('Output', out)
     # cv2.waitKey(0)
     # cv2.destroyAllWindows()
-    cv2.imwrite(path, out)
     return out
 
 new_a = []
@@ -134,11 +130,15 @@ for c in cnts:
 new_a = sorted(new_a,key=itemgetter(1))
 
 count = 0
-for a in new_a[len(new_a) - 6:len(new_a)]:
+
+top_6_large_box = new_a[len(new_a) - 6:len(new_a)]
+
+show_numbers = []
+for a in top_6_large_box:
     box_cou= a[0]
     box = make_box(box_cou)
-    left_top = box[0] #x:y
-    right_bottom = box[1] #x:y
+    left_top = box[0] #x:y min 
+    right_bottom = box[1] #x:y max
     image_box = cropped_img[left_top[1]:right_bottom[1], left_top[0]:right_bottom[0]] # y1,y2, x1:x2
     # print(image_box.shape)
     path = "image_boxs/hinh{}.png".format(count)
@@ -147,79 +147,22 @@ for a in new_a[len(new_a) - 6:len(new_a)]:
     count+=1
     if(percent > 0):
         instr = "{}_{:0.0f}%".format(val, percent*100)
-        print(instr)
-        print(box_cou)
-        print("---------------------")
+        # print(instr)
+        # print(box_cou)
+        # print("---------------------")
         cv2.drawContours(cropped_img, [box_cou], 0, (0,255,255), 3)
-        cv2.putText(cropped_img, str(instr), (left_top[0], left_top[1]), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 0, 0), 1, cv2.LINE_AA)
+        cv2.putText(cropped_img, str(instr), (left_top[0], left_top[1]), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 0, 0), 2, cv2.LINE_AA)
+    x_min = left_top[0]
+    show_numbers.append([val, x_min])
 
-# boxs = sorted(boxs,key=itemgetter(1))
-# print("len1: ", len(boxs))
-# boxs=np.unique(boxs,axis=0) #remove duplicate
-# print("len2: ", len(boxs))
+show_numbers = sorted(show_numbers,key=itemgetter(1))
+number_str = ""
+for number in show_numbers:
+    number_str += str(number[0])
 
-# no_dup_boxs = [] # box which no duplicate
-# for box in boxs:
-#     left_top = box[0] #x:y
-#     right_bottom = box[1] #x:y
-#     cross = calculateDistance(left_top[0], left_top[1], right_bottom[0], right_bottom[1]) #x1,y1,x2,y2
+cv2.rectangle(cropped_img, (50, 5), (300, 55), (0,0,0), -1)
+cv2.putText(cropped_img, str(number_str), (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 255, 255), 4, cv2.LINE_AA)
 
-#     image_box = cropped_img[left_top[1]:right_bottom[1], left_top[0]:right_bottom[0]] # y1,y2, x1:x2
-#     (h, w, d) = image_box.shape
-#     if(h*w >0): 
-#         no_dup_boxs.append([box, int(cross)])
-
-# print("")
-# print("len3 new box: ", len(no_dup_boxs))
-# sorted_boxs = sorted(no_dup_boxs,key=itemgetter(1)) # box which sorted by cross like 1-2-5-9...
-
-
-# def rectangle_area(left_top, right_bottom):
-#     w = right_bottom[0] - left_top[0]
-#     h = right_bottom[1] - left_top[1]
-#     return abs(h*w)
-
-# new_boxs = []
-# for sorted_box in  sorted_boxs[len(sorted_boxs) - 20:len(sorted_boxs)]:
-#     # box = sorted_box[0]
-#     # left_top = box[0] #x:y
-#     # right_bottom = box[1] #x:y
-#     # image_box = cropped_img[left_top[1]:right_bottom[1], left_top[0]:right_bottom[0]] # y1,y2, x1:x2
-#     # [val, percent] = detection_number(image_box, model)
-#     # if(percent > 0.5):
-#     #     print("val {} {}".format(val, percent))
-#     #     print(image_box.shape)
-#     #     cv2.rectangle(cropped_img, left_top, right_bottom, (0,255,0), 3)
-#     #     cv2.putText(cropped_img, str(val), (left_top[0], left_top[1]), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
-#     #     path = "image_boxs/hinh{}.png".format(val)
-#     #     cv2.imwrite(path, image_box)
-
-#     box = sorted_box[0]
-#     left_top = box[0] #x:y
-#     right_bottom = box[1] #x:y
-#     image_box = cropped_img[left_top[1]:right_bottom[1], left_top[0]:right_bottom[0]] # y1,y2, x1:x2
-#     [val, percent] = detection_number(image_box, model)
-#     if(percent > 0.4):
-#         new_boxs.append([box, int(rectangle_area(left_top, right_bottom))])
-#         # cv2.rectangle(cropped_img, left_top, right_bottom, (0,255,0), 3)
-
-# new_boxs = sorted(new_boxs,key=itemgetter(1))
-# # print(new_boxs)
-# count = 0
-# for new_box in  new_boxs[len(new_boxs) - 10:len(new_boxs)]:
-#     box = new_box[0]
-#     left_top = box[0] #x:y
-#     right_bottom = box[1] #x:y
-#     image_box = cropped_img[left_top[1]:right_bottom[1], left_top[0]:right_bottom[0]] # y1,y2, x1:x2
-#     [val, percent] = detection_number(image_box, model)
-#     if(percent > 0.4):
-#         instr = "{}_{:0.2f}_{}".format(val, percent, count)
-#         print(instr)
-#         cv2.rectangle(cropped_img, left_top, right_bottom, (0,255,0), 3)
-#         count += 1
-#         cv2.putText(cropped_img, str(instr), (left_top[0], left_top[1]), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 1, cv2.LINE_AA)
-
-
-cv2.imwrite("detected_imgs/hinh3.png", cropped_img)
+cv2.imwrite("detected_imgs/binhthuan.png", cropped_img)
 plt.imshow(cv2.cvtColor(cropped_img, cv2.COLOR_BGR2RGB))
 plt.show()
