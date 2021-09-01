@@ -34,6 +34,7 @@ for x in range (0, nuOfClasses):
     # print(myPicList)
     for y in myPicList:
         curImg = cv2.imread(path + "/" + str(x) + "/" + y)
+        # print(path + "/" + str(x) + "/" + y)
         curImg = cv2.resize(curImg , (imageDimensions[0], imageDimensions[1]))
         images.append(curImg)
         classNu.append(x)
@@ -156,8 +157,4 @@ score = model.evaluate(X_test, y_test, verbose= 0)
 print('Test score = ', score[0])
 print('Test accuracy = ', score[1])
 
-# filename = 'hanh_model.sav'
-# pickle.dump(model, open(filename, 'wb'))
-
 model.save('hanh_model_l4.h5')
-# model1 = load_model('my_model.h5')

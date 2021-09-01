@@ -18,7 +18,7 @@ def cut6number(img):
 
 def detection_number(img, model):
     img = cv2.resize(img, (32, 32))
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    # img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     img = cv2.equalizeHist(img)
     img = img/255
     img = img.reshape(1, 32, 32, 1)
@@ -42,11 +42,13 @@ def make_box(box):
     # y_arr = sorted(y_arr)
     return [min(x_arr), min(y_arr)], [max(x_arr), max(y_arr)]
     
-model = load_model('hanh_model_l4.h5')
+model = load_model('cnn_trainning/hanh_model_l4.h5')
+# img = cv2.imread('opencv_img/no_noise_binhthuan.jpg')
+# img = cv2.imread('opencv_img/no_noise_danang.jpg')
 img = cv2.imread('opencv_img/no_noise_dongnai.jpg')
 cropped_img = cut6number(img)
-cv2.imwrite("detected_imgs/hinh2.png", cropped_img)
-cropped_img = cv2.imread('detected_imgs/hinh2.png')
+# cv2.imwrite("detected_imgs/hinh2.png", cropped_img)
+# cropped_img = cv2.imread('detected_imgs/hinh2.png')
 gray = cv2.cvtColor(cropped_img, cv2.COLOR_BGR2GRAY)
 canny = cv2.Canny(gray, 130, 255, 1)
 cnts = cv2.findContours(canny, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -81,25 +83,26 @@ def uni(ar):
              newlist.append(item)
     return newlist
 
-# def cutCountour(img, path, con):
-# idx = ... # The index of the contour that surrounds your object
-# mask = np.zeros_like(img) # Create mask where white is what we want, black otherwise
-# cv2.drawContours(mask, con, idx, 255, -1) # Draw filled contour in mask
-# out = np.zeros_like(img) # Extract out the object and place into output image
-# out[mask == 255] = img[mask == 255]
+def cutCountour(img, path, con):
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    idx = 0 # The index of the contour that surrounds your object
+    mask = np.zeros_like(img) # Create mask where white is what we want, black otherwise
+    cv2.drawContours(mask, [con], idx, (255, 0, 0), -1) # Draw filled contour in mask
+    out = np.zeros_like(img) # Extract out the object and place into output image
+    out[mask == 255] = img[mask == 255]
 
-# # Now crop
-# (y, x) = np.where(mask == 255)
-# (topy, topx) = (np.min(y), np.min(x))
-# (bottomy, bottomx) = (np.max(y), np.max(x))
-# out = out[topy:bottomy+1, topx:bottomx+1]
+    # Now crop
+    (y, x) = np.where(mask == 255)
+    (topy, topx) = (np.min(y), np.min(x))
+    (bottomy, bottomx) = (np.max(y), np.max(x))
+    out = out[topy:bottomy+1, topx:bottomx+1]
 
-# # Show the output image
-# cv2.imshow('Output', out)
-# cv2.waitKey(0)
-# cv2.destroyAllWindows()
-#     cv2.imwrite(path, result)
-#     return result
+    # Show the output image
+    # cv2.imshow('Output', out)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
+    cv2.imwrite(path, out)
+    return out
 
 new_a = []
 count = 0
@@ -115,22 +118,24 @@ for c in cnts:
 
 new_a = sorted(new_a,key=itemgetter(1))
 
-for a in new_a[len(new_a) - 6:len(new_a)]:
+count = 0
+for a in new_a[len(new_a) - 7:len(new_a)]:
     box_cou= a[0]
     box = make_box(box_cou)
     left_top = box[0] #x:y
     right_bottom = box[1] #x:y
     image_box = cropped_img[left_top[1]:right_bottom[1], left_top[0]:right_bottom[0]] # y1,y2, x1:x2
-    print(image_box.shape)
-    [val, percent] = detection_number(image_box, model)
-    if(percent > 0.1):
+    # print(image_box.shape)
+    path = "image_boxs/hinh{}.png".format(count)
+    img_cut_con = cutCountour(cropped_img, path, box_cou)
+    [val, percent] = detection_number(img_cut_con, model)
+    count+=1
+    if(percent > 0):
         instr = "{}_{:0.2f}_{}".format(val, percent, count)
         print(instr)
+        print(box_cou)
+        print("---------------------")
         cv2.drawContours(cropped_img, [box_cou], 0, (0,255,255), 3)
-        path = "image_boxs/hinh{}.png".format(val)
-        cutCountour(cropped_img, path)
-        # cv2.imwrite(path, image_box)
-        count += 1
         cv2.putText(cropped_img, str(instr), (left_top[0], left_top[1]), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 1, cv2.LINE_AA)
 
 # boxs = sorted(boxs,key=itemgetter(1))
@@ -200,6 +205,6 @@ for a in new_a[len(new_a) - 6:len(new_a)]:
 #         cv2.putText(cropped_img, str(instr), (left_top[0], left_top[1]), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 1, cv2.LINE_AA)
 
 
-cv2.imwrite("detected_imgs/hinh2.png", cropped_img)
+cv2.imwrite("detected_imgs/hinh8.png", cropped_img)
 plt.imshow(cv2.cvtColor(cropped_img, cv2.COLOR_BGR2RGB))
 plt.show()
